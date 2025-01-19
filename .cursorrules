@@ -1,0 +1,68 @@
+# CursorRules for the Knowledge Graph and Conversational System Project
+
+# General Principles
+1. Write clean, modular code with meaningful names for all entities, functions, and variables.
+2. Keep all logic and code reusable and focused; no function should exceed 20 lines unless necessary.
+3. Document all functions, classes, and modules with clear docstrings.
+
+# Programming Language Rules
+1. **Python**:
+   - Use for backend logic, NLP, ML models, and API development.
+   - Follow PEP 8 guidelines and use type hints for all functions.
+   - Use virtual environments for dependency management.
+
+2. **JavaScript/TypeScript**:
+   - Use for frontend development and graph visualizations.
+   - Follow the Airbnb Style Guide for consistency.
+
+3. Use appropriate query languages (Cypher, SPARQL, etc.) for interacting with the graph database.
+
+# Project Structure
+1. Separate code into clear modules:
+   - `backend/` for processing, ML models, and APIs.
+   - `frontend/` for UI components and visualizations.
+   - `data/` for raw and processed datasets.
+   - `config/` for environment-specific configurations.
+
+2. All configuration files (e.g., `.env`, `config.yaml`) must be stored securely and excluded from version control.
+
+# Knowledge Graph Rules
+1. Every entity must have:
+   - A unique identifier (`id`).
+   - A `type` aligned with the ontology.
+   - A `source` indicating provenance.
+
+2. Relationships must adhere to the ontology and include valid `source` and `target` entity types.
+
+3. Use efficient, parameterized queries for all graph database interactions.
+
+# API Design
+1. Use REST or GraphQL endpoints for communication between frontend and backend.
+2. Validate all inputs and use consistent JSON response formats.
+3. Ensure APIs are secure, scalable, and performant.
+
+# Testing
+1. Write unit tests for core logic (NER, relationship extraction, graph queries).
+2. Include integration tests for API and KG interactions.
+3. Use performance testing for critical endpoints.
+
+# Deployment
+1. Use Docker for containerization and orchestration.
+2. Separate configurations for `development`, `staging`, and `production` environments.
+3. Monitor deployments using tools like Prometheus or equivalent.
+
+# Collaboration
+1. Use version control (Git) with a clear branching strategy:
+   - `main` for production.
+   - `dev` for active development.
+   - Feature branches for specific tasks.
+
+2. Code reviews are mandatory for pull requests.
+
+# Style and Readability
+1. Avoid hardcoding values; use configuration files or environment variables.
+2. Write readable code: prioritize clarity over cleverness.
+
+# Performance
+1. Optimize all graph queries and ML models for scalability.
+2. Cache intermediate results where appropriate to minimize redundant computation.
