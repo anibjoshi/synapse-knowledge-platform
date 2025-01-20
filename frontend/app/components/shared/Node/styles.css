@@ -1,0 +1,86 @@
+.node {
+  transition: all 0.2s ease;
+}
+
+.node-box {
+  fill: white;
+  stroke: #e2e8f0;
+  stroke-width: 2;
+  filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07));
+  transition: all 0.2s ease;
+}
+
+.node:hover .node-box {
+  stroke: #3b82f6;
+  filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.04)) 
+         drop-shadow(0 4px 3px rgb(0 0 0 / 0.1));
+}
+
+.node-text {
+  font-size: 14px;
+  fill: #1e293b;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  user-select: none;
+  font-weight: 500;
+  padding: 0 20px;
+}
+
+.question-button {
+  opacity: 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.node:hover .question-button {
+  opacity: 1;
+}
+
+.question-circle {
+  fill: white;
+  stroke: #3b82f6;
+  stroke-width: 2;
+  filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07));
+}
+
+.question-symbol {
+  fill: #3b82f6;
+  font-size: 14px;
+  font-weight: bold;
+  user-select: none;
+}
+
+.question-button:hover .question-circle {
+  fill: #3b82f6;
+}
+
+.question-button:hover .question-symbol {
+  fill: white;
+}
+
+.node-input,
+.question-input {
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 2px solid #3b82f6;
+  outline: none;
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+  background: white;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.response-text {
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #475569;
+  max-height: 60px;
+  overflow-y: auto;
+  line-height: 1.4;
+} 
