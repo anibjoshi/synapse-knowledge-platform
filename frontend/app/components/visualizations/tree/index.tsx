@@ -88,7 +88,6 @@ interface TreeProps {
   initialData: TreeNodeData
   onNodeUpdate?: (id: string, newName: string) => void
   onAskQuestion: (nodeId: string, question: string) => Promise<ApiResponse>
-  isLoading?: boolean
 }
 
 export function TreeVisualization({
@@ -96,13 +95,10 @@ export function TreeVisualization({
   initialData,
   onNodeUpdate,
   onAskQuestion,
-  isLoading: externalLoading
 }: TreeProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
-  const [isLoading, setIsLoading] = useState(false)
   const [root, setRoot] = useState<d3.HierarchyPointNode<TreeNodeData> | null>(null)
-  const [activeQuestion, setActiveQuestion] = useState<{ nodeId: string, x: number, y: number } | null>(null)
   const [selectedNode, setSelectedNode] = useState<{id: string, name: string} | null>(null)
   const [loadingNodes, setLoadingNodes] = useState<Set<string>>(new Set())
   const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false)
@@ -193,18 +189,21 @@ export function TreeVisualization({
 
   // Handle click outside
   const handleBackdropClick = useCallback(() => {
-    setActiveQuestion(null)
+    // Remove activeQuestion state since we're not using the modal anymore
   }, [])
 
   // Then update the handleQuestionSubmit to properly handle the API response
   const handleQuestionSubmit = useCallback(async (question: string) => {
-    if (!activeQuestion || !onAskQuestion) return
+    if (!selectedNode || !onAskQuestion) return
     
-    setIsLoading(true)
-    setLoadingNodes(prev => new Set(prev).add(activeQuestion.nodeId))
+    // Hide modal immediately
+    setSelectedNode(null)
+    
+    // Set loading state for this specific node
+    setLoadingNodes(prev => new Set(prev).add(selectedNode.id))
     
     try {
-      const response = await onAskQuestion(activeQuestion.nodeId, question)
+      const response = await onAskQuestion(selectedNode.id, question)
       console.log('API Response:', response)
 
       setRoot(prevRoot => {
@@ -215,7 +214,7 @@ export function TreeVisualization({
         
         // Find the node to update
         clone.each(node => {
-          if (node.data.id === activeQuestion.nodeId) {
+          if (node.data.id === selectedNode.id) {
             // Get existing children or empty array
             const existingChildren = node.data.children || []
             
@@ -238,15 +237,13 @@ export function TreeVisualization({
       })
 
     } finally {
-      setIsLoading(false)
       setLoadingNodes(prev => {
         const next = new Set(prev)
-        next.delete(activeQuestion.nodeId)
+        next.delete(selectedNode.id)
         return next
       })
-      setActiveQuestion(null)
     }
-  }, [activeQuestion, onAskQuestion])
+  }, [selectedNode, onAskQuestion])
 
   const handleNodeDoubleClick = useCallback((nodeId: string, nodeName: string) => {
     setSelectedNode({ id: nodeId, name: nodeName })
@@ -261,7 +258,7 @@ export function TreeVisualization({
   ].filter(Boolean).join(' ')
 
   return (
-    <Layout isLoading={isLoading || externalLoading} className={className}>
+    <Layout className={className}>
       <button 
         className="history-toggle"
         onClick={() => setIsChatHistoryOpen(true)}
@@ -281,7 +278,7 @@ export function TreeVisualization({
           height="100%"
           viewBox={`0 0 ${dimensions.width || DEFAULT_DIMENSIONS.width} ${dimensions.height || DEFAULT_DIMENSIONS.height}`}
         >
-          <g className={activeQuestion ? 'graph-blur' : ''}>
+          <g>
             {/* Render links with relationship labels */}
             {root?.links().map((link, i) => {
               const relationship = (link.target.data as any).relationship
@@ -323,68 +320,50 @@ export function TreeVisualization({
                 width={NODE_SIZE.width}
                 height={40}
                 onUpdate={handleUpdateNode}
-                onAskQuestion={onAskQuestion}
+                onAskQuestion={async (nodeId, question) => {
+                  setLoadingNodes(prev => new Set(prev).add(nodeId))
+                  try {
+                    const response = await onAskQuestion(nodeId, question)
+                    
+                    // Type check the response
+                    if (!response || !Array.isArray(response.nodes)) {
+                      console.error('Invalid response format:', response)
+                      return
+                    }
+                    
+                    setRoot(prevRoot => {
+                      if (!prevRoot) return null
+                      const clone = d3.hierarchy(JSON.parse(JSON.stringify(prevRoot.data)))
+                      
+                      clone.each(node => {
+                        if (node.data.id === nodeId) {
+                          const existingChildren = node.data.children || []
+                          const existingIds = new Set(existingChildren.map(child => child.id))
+                          // Make sure we're using the nodes array from the response
+                          const newUniqueNodes = response.nodes.filter(newNode => !existingIds.has(newNode.id))
+                          node.data.children = [...existingChildren, ...newUniqueNodes]
+                        }
+                      })
+
+                      const treeLayout = d3.tree<TreeNodeData>()
+                        .nodeSize([SPACING.MIN_HORIZONTAL, SPACING.MIN_VERTICAL])
+                      return treeLayout(clone)
+                    })
+                  } catch (error) {
+                    console.error('Error expanding node:', error)
+                  } finally {
+                    setLoadingNodes(prev => {
+                      const next = new Set(prev)
+                      next.delete(nodeId)
+                      return next
+                    })
+                  }
+                }}
                 onDoubleClick={handleNodeDoubleClick}
                 isLoading={loadingNodes.has(node.data.id)}
               />
             ))}
           </g>
-          
-          {/* Question Modal */}
-          {activeQuestion && (
-            <g>
-              {/* Backdrop */}
-              <rect
-                x={0}
-                y={0}
-                width={dimensions.width}
-                height={dimensions.height}
-                className="modal-backdrop"
-                onClick={handleBackdropClick}
-              />
-              {/* Question Box */}
-              <g transform={`translate(${activeQuestion.x}, ${activeQuestion.y})`}>
-                <rect
-                  x={-150}
-                  y={-75}
-                  width={300}
-                  height={150}
-                  rx={12}
-                  className="modal-container"
-                />
-                <foreignObject
-                  x={-140}
-                  y={-65}
-                  width={280}
-                  height={130}
-                >
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      const input = e.currentTarget.querySelector("input")
-                      if (input?.value) {
-                        handleQuestionSubmit(input.value)
-                        input.value = ""
-                      }
-                    }}
-                    className="modal-form"
-                  >
-                    <input
-                      type="text"
-                      placeholder="Ask Synapse about this topic..."
-                      className="modal-input"
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === "Escape") {
-                          setActiveQuestion(null)
-                        }
-                      }}
-                    />
-                  </form>
-                </foreignObject>
-              </g>
-            </g>
-          )}
         </svg>
         <Sidebar 
           isOpen={!!selectedNode}
