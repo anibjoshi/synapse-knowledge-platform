@@ -9,6 +9,7 @@ import { useZoom } from "../hooks/useZoom"
 import { TreeNodeData, TreeProps, D3TreeNode } from "./types"
 import "./styles.css"
 import { Sidebar } from "../../shared/Sidebar"
+import { ChatHistory } from "../../shared/ChatHistory"
 
 const INITIAL_TRANSFORM = {
   x: 0,
@@ -104,6 +105,7 @@ export function TreeVisualization({
   const [activeQuestion, setActiveQuestion] = useState<{ nodeId: string, x: number, y: number } | null>(null)
   const [selectedNode, setSelectedNode] = useState<{id: string, name: string} | null>(null)
   const [loadingNodes, setLoadingNodes] = useState<Set<string>>(new Set())
+  const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false)
 
   // Get container dimensions
   const dimensions = useDimensions(containerRef)
@@ -250,9 +252,28 @@ export function TreeVisualization({
     setSelectedNode({ id: nodeId, name: nodeName })
   }, [])
 
+  // Compute container classes
+  const containerClasses = [
+    'tree-container',
+    isChatHistoryOpen && 'left-sidebar-open',
+    selectedNode && 'right-sidebar-open',
+    (isChatHistoryOpen && selectedNode) && 'both-sidebars-open'
+  ].filter(Boolean).join(' ')
+
   return (
     <Layout isLoading={isLoading || externalLoading} className={className}>
-      <div ref={containerRef} className="tree-container">
+      <button 
+        className="history-toggle"
+        onClick={() => setIsChatHistoryOpen(true)}
+        title="Chat History"
+      >
+        ≡
+      </button>
+      <ChatHistory 
+        isOpen={isChatHistoryOpen}
+        onClose={() => setIsChatHistoryOpen(false)}
+      />
+      <div ref={containerRef} className={containerClasses}>
         <svg
           ref={svgRef}
           className="tree-svg"
