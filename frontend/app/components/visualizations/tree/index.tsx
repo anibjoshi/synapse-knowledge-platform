@@ -26,40 +26,57 @@ const NODE_SIZE = {
 }
 
 const SPACING = {
-  HORIZONTAL: 200,  // Space between siblings
-  VERTICAL: 100,    // Space between parent and child
-  TOP_MARGIN: 40    // Space from top
+  MIN_HORIZONTAL: 200,  // Increased minimum space
+  MIN_VERTICAL: 150,    // Increased vertical space
+  TOP_MARGIN: 80,
+  NODE_PADDING: 50     // Increased padding
 }
 
-// Add relationship colors
-const RELATIONSHIP_STYLES = {
-  type: {
-    stroke: '#3b82f6',  // blue
-    label: 'is a type of'
-  },
-  company: {
-    stroke: '#10b981',  // green
-    label: 'is a company in'
-  },
-  product: {
-    stroke: '#8b5cf6',  // purple
-    label: 'is a product of'
-  }
-}
-
-// Update path generator to include relationship label
+// Enhanced path generator for more natural curves
 function generatePath(
   source: { x: number, y: number },
   target: { x: number, y: number },
   relationship?: string
 ): { path: string, labelPosition: { x: number, y: number } } {
-  const midY = source.y + (target.y - source.y) * 0.5
+  // Calculate control points for a more natural curve
+  const dx = target.x - source.x
+  const dy = target.y - source.y
+  const controlPoint1X = source.x + dx * 0.2
+  const controlPoint1Y = source.y + dy * 0.4
+  const controlPoint2X = source.x + dx * 0.8
+  const controlPoint2Y = source.y + dy * 0.6
+
+  // Create smooth curve
+  const path = `
+    M ${source.x},${source.y}
+    C ${controlPoint1X},${controlPoint1Y}
+      ${controlPoint2X},${controlPoint2Y}
+      ${target.x},${target.y}
+  `
+
+  // Calculate label position along the curve
   return {
-    path: `M${source.x},${source.y} L${source.x},${midY} L${target.x},${midY} L${target.x},${target.y}`,
+    path,
     labelPosition: {
-      x: source.x + (target.x - source.x) / 2,
-      y: midY - 10
+      x: source.x + dx * 0.5,
+      y: source.y + dy * 0.4 - 10
     }
+  }
+}
+
+// Update relationship styles for a softer look
+const RELATIONSHIP_STYLES = {
+  type: {
+    stroke: '#818cf8',    // Softer purple
+    label: 'is a type of'
+  },
+  company: {
+    stroke: '#34d399',    // Softer green
+    label: 'is a company in'
+  },
+  product: {
+    stroke: '#60a5fa',    // Softer blue
+    label: 'is a product of'
   }
 }
 
@@ -84,43 +101,75 @@ export function TreeVisualization({
     enabled: !!root
   })
 
-  // Initialize tree layout - now depends on initialData
+  // Initialize tree layout
   useEffect(() => {
     const width = dimensions.width || DEFAULT_DIMENSIONS.width
     const height = dimensions.height || DEFAULT_DIMENSIONS.height
 
-    const hierarchy = d3.hierarchy(initialData)  // Use initialData directly
+    const hierarchy = d3.hierarchy(initialData)
+
+    // Calculate tree metrics
+    const totalNodes = hierarchy.descendants().length
+    const maxDepth = d3.max(hierarchy.descendants(), d => d.depth) || 0
+    const nodesPerLevel = new Map<number, number>()
     
+    hierarchy.descendants().forEach(d => {
+      nodesPerLevel.set(d.depth, (nodesPerLevel.get(d.depth) || 0) + 1)
+    })
+    
+    const maxNodesAtLevel = Math.max(...Array.from(nodesPerLevel.values()))
+
+    // Calculate available space
+    const availableWidth = width * 0.8  // Use 80% of width
+    const availableHeight = height * 0.8 // Use 80% of height
+
+    // Calculate spacing
+    const horizontalSpacing = Math.max(
+      SPACING.MIN_HORIZONTAL,
+      availableWidth / maxNodesAtLevel
+    )
+
+    const verticalSpacing = Math.max(
+      SPACING.MIN_VERTICAL,
+      availableHeight / (maxDepth + 1)  // +1 to account for root level
+    )
+
     const treeLayout = d3.tree<TreeNodeData>()
-      .nodeSize([SPACING.HORIZONTAL, SPACING.VERTICAL])
+      .nodeSize([horizontalSpacing, verticalSpacing])  // Use nodeSize instead of size
       .separation((a, b) => {
-        return a.parent === b.parent ? 1.2 : 2
+        if (a.parent === b.parent) {
+          // Siblings
+          return 1.2
+        }
+        // Nodes in different branches
+        return 2
       })
 
-    // Calculate layout
     const newRoot = treeLayout(hierarchy)
 
-    // Calculate the bounds of the tree
+    // Calculate bounds
     let minX = Infinity
     let maxX = -Infinity
+    let maxY = -Infinity
 
     newRoot.each(d => {
       minX = Math.min(minX, d.x)
       maxX = Math.max(maxX, d.x)
+      maxY = Math.max(maxY, d.y)
     })
 
-    // Calculate the center offset
+    // Center the tree
     const treeWidth = maxX - minX
     const centerOffset = (width - treeWidth) / 2
 
-    // Center nodes horizontally and adjust vertical spacing
+    // Position nodes with proper spacing
     newRoot.each(d => {
       d.x = d.x - minX + centerOffset
-      d.y = d.y + SPACING.TOP_MARGIN
+      d.y = SPACING.TOP_MARGIN + (d.depth * verticalSpacing)
     })
 
     setRoot(newRoot)
-  }, [dimensions, initialData])  // Add initialData to dependencies
+  }, [dimensions, initialData])
 
   // Handle node updates
   const handleUpdateNode = useCallback((id: string, newName: string) => {
