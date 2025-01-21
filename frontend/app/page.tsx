@@ -30,8 +30,10 @@ export default function Home(): React.ReactElement {
         setTreeData(prev => {
           const updateNode = (node: TreeNodeData): TreeNodeData => {
             if (node.id === nodeId) {
-              // Merge new children with existing ones
+              // Get existing children or empty array
               const existingChildren = node.children || []
+              
+              // Create new children objects
               const newChildren = data.nodes.map(n => ({
                 id: n.id,
                 name: n.name,
@@ -39,12 +41,13 @@ export default function Home(): React.ReactElement {
                 children: []
               }))
 
-              // Combine children, removing duplicates by ID
+              // Create Set of existing IDs for O(1) lookup
+              const existingIds = new Set(existingChildren.map(child => child.id))
+              
+              // Filter out duplicates and combine with existing children
               const mergedChildren = [
                 ...existingChildren,
-                ...newChildren.filter(newChild => 
-                  !existingChildren.some(existing => existing.id === newChild.id)
-                )
+                ...newChildren.filter(newChild => !existingIds.has(newChild.id))
               ]
 
               return {
@@ -63,8 +66,6 @@ export default function Home(): React.ReactElement {
           return updateNode(prev)
         })
       }
-      
-      return data
     } finally {
       setIsLoading(false)
     }
@@ -79,5 +80,19 @@ export default function Home(): React.ReactElement {
       />
     </main>
   )
+}
+
+// Helper function to find a node by ID
+function findNode(tree: TreeNodeData, id: string): TreeNodeData | null {
+  if (tree.id === id) {
+    return tree
+  }
+  if (tree.children) {
+    for (const child of tree.children) {
+      const found = findNode(child, id)
+      if (found) return found
+    }
+  }
+  return null
 }
 

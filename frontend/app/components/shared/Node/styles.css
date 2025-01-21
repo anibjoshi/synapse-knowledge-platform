@@ -3,27 +3,25 @@
 }
 
 .node-box {
-  fill: white;
-  stroke: #e2e8f0;
-  stroke-width: 2;
-  filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07));
+  fill: #1e293b;  /* Back to original dark blue */
+  stroke: #475569;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.3));
   transition: all 0.2s ease;
 }
 
 .node:hover .node-box {
-  stroke: #3b82f6;
-  filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.04)) 
-         drop-shadow(0 4px 3px rgb(0 0 0 / 0.1));
+  stroke: #60a5fa;  /* Blue highlight */
+  filter: drop-shadow(0 0 12px rgb(96 165 250 / 0.3));
 }
 
 .node-text {
-  font-size: 14px;
-  fill: #1e293b;
+  font-size: 12px;  /* Changed from 14px */
+  fill: #e2e8f0;  /* Light gray text */
   text-anchor: middle;
   dominant-baseline: middle;
   user-select: none;
   font-weight: 500;
-  padding: 0 20px;
 }
 
 .question-button {
@@ -36,26 +34,34 @@
   opacity: 1;
 }
 
-.question-circle {
-  fill: white;
-  stroke: #3b82f6;
-  stroke-width: 2;
-  filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07));
+.question-pill,
+.chat-pill {
+  fill: #1e293b;
+  stroke: #ffffff;
+  stroke-width: 1;  /* Reduced from 1.5 */
+  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.3));
+  transition: all 0.2s ease;
+  rx: 4;  /* Reduced from 6 */
 }
 
-.question-symbol {
-  fill: #3b82f6;
-  font-size: 14px;
-  font-weight: bold;
+.question-text,
+.chat-text {
+  fill: #ffffff;
+  font-size: 9px;  /* Reduced from 11px */
+  font-weight: 500;
   user-select: none;
+  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
 }
 
-.question-button:hover .question-circle {
-  fill: #3b82f6;
+.question-button:hover .question-pill,
+.chat-button:hover .chat-pill {
+  fill: #ffffff;  /* White background on hover */
 }
 
-.question-button:hover .question-symbol {
-  fill: white;
+.question-button:hover .question-text,
+.chat-button:hover .chat-text {
+  fill: #1e293b;
 }
 
 .node-input,
@@ -64,23 +70,140 @@
   height: 100%;
   padding: 8px;
   border-radius: 8px;
-  border: 2px solid #3b82f6;
+  border: 1.5px solid #60a5fa;
   outline: none;
-  font-size: 14px;
+  font-size: 12px;  /* Changed from 14px */
   font-family: inherit;
   box-sizing: border-box;
-  background: white;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  background: #1e293b;
+  color: #e2e8f0;
+  box-shadow: 0 4px 6px rgb(0 0 0 / 0.3);
 }
 
 .response-text {
   padding: 8px 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #0f172a;
+  border: 1px solid #475569;
   border-radius: 8px;
   font-size: 14px;
-  color: #475569;
+  color: #94a3b8;
   max-height: 60px;
   overflow-y: auto;
   line-height: 1.4;
+}
+
+.question-overlay {
+  transition: all 0.3s ease;
+}
+
+.question-backdrop {
+  fill: rgba(15, 23, 42, 0.6);  /* Dark blue with opacity */
+  filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.question-container {
+  fill: #1e293b;
+  stroke: #60a5fa;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 12px rgb(96 165 250 / 0.2));
+  transition: all 0.3s ease;
+}
+
+.question-form {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+}
+
+.question-input {
+  width: 100%;
+  background: rgba(30, 41, 59, 0.7);  /* Semi-transparent dark blue background */
+  border: 1px solid rgba(255, 255, 255, 0.1);  /* Subtle white border */
+  border-radius: 4px;  /* Slightly rounded corners */
+  outline: none;
+  color: #e2e8f0;
+  font-size: 12px;
+  font-family: inherit;
+  text-align: center;
+  padding: 8px;
+  backdrop-filter: blur(4px);  /* Optional: adds a blur effect */
+}
+
+.question-input::placeholder {
+  color: #64748b;
+  opacity: 0.8;
+  font-size: 11px;
+}
+
+.chat-button {
+  opacity: 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.node:hover .chat-button {
+  opacity: 1;
+}
+
+.chat-button:hover .chat-pill {
+  fill: #ffffff;
+}
+
+.chat-button:hover .chat-text {
+  fill: #1e293b;
+}
+
+.node-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.question-button {
+  opacity: 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.node:hover .question-button {
+  opacity: 1;
+}
+
+/* Add loading state styles */
+.node-box.loading {
+  opacity: 0.7;
+}
+
+.loading-spinner {
+  pointer-events: none;
+}
+
+.spinner-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 2;
+}
+
+.spinner-head {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 20;
+  stroke-dashoffset: 0;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+    stroke-dashoffset: 75;
+  }
+  to {
+    transform: rotate(360deg);
+    stroke-dashoffset: 0;
+  }
 } 

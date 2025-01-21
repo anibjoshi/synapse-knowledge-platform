@@ -73,11 +73,10 @@ export interface LinkData {
 
 // Common API response types
 export interface ApiResponse {
-  type: "children"
+  type: 'children'
   nodes: {
     id: string
     name: string
-    parentId: string
-    relationship: "type" | "company" | "product"
+    relationship?: string
   }[]
 } 

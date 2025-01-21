@@ -1,8 +1,8 @@
 .visualization-container {
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   overflow: hidden;
   position: relative;
-  background: white;
+  background: #0f172a;  /* Dark blue background */
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 } 
