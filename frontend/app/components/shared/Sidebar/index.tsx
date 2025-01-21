@@ -20,7 +20,32 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, selectedNode, onClose }: SidebarProps) {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      content: "Tell me more about machine learning applications in healthcare.",
+      sender: "user",
+      timestamp: new Date(Date.now() - 1000 * 60 * 5) // 5 minutes ago
+    },
+    {
+      id: '2',
+      content: "Machine learning in healthcare is revolutionizing patient care through various applications such as disease diagnosis, treatment prediction, and medical imaging analysis. For example, deep learning models can detect abnormalities in X-rays and MRIs with high accuracy.",
+      sender: "assistant",
+      timestamp: new Date(Date.now() - 1000 * 60 * 4) // 4 minutes ago
+    },
+    {
+      id: '3',
+      content: "What about predictive analytics for patient outcomes?",
+      sender: "user",
+      timestamp: new Date(Date.now() - 1000 * 60 * 3) // 3 minutes ago
+    },
+    {
+      id: '4',
+      content: "Predictive analytics uses patient data to forecast potential health risks and outcomes. This helps healthcare providers take preventive measures and optimize treatment plans. The models analyze factors like medical history, lifestyle data, and genetic information to make these predictions.",
+      sender: "assistant",
+      timestamp: new Date(Date.now() - 1000 * 60 * 2) // 2 minutes ago
+    }
+  ])
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -98,7 +123,7 @@ export function Sidebar({ isOpen, selectedNode, onClose }: SidebarProps) {
           >
             <div className="message-content">{message.content}</div>
             <div className="message-timestamp">
-              {message.timestamp.toLocaleTimeString()}
+              {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
           </div>
         ))}
@@ -126,7 +151,7 @@ export function Sidebar({ isOpen, selectedNode, onClose }: SidebarProps) {
           disabled={isLoading || !inputValue.trim()}
           className="send-button"
         >
-          Send
+          
         </button>
       </form>
     </div>
