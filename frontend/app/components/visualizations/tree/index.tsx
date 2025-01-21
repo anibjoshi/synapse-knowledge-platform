@@ -81,28 +81,6 @@ const RELATIONSHIP_STYLES = {
   }
 }
 
-function mergeNodes(existingData: TreeNodeData, newNodes: TreeNodeData[]): TreeNodeData {
-  // If the node has no children, simply add the new nodes
-  if (!existingData.children) {
-    return {
-      ...existingData,
-      children: newNodes
-    }
-  }
-
-  // Keep existing children and add new unique nodes
-  const existingChildren = existingData.children
-  const existingIds = new Set(existingChildren.map(child => child.id))
-  
-  // Filter out any new nodes that already exist
-  const newUniqueNodes = newNodes.filter(node => !existingIds.has(node.id))
-  
-  return {
-    ...existingData,
-    children: [...existingChildren, ...newUniqueNodes]
-  }
-}
-
 // First, update the TreeProps interface to specify the return type
 interface TreeProps {
   className?: string

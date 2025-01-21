@@ -82,17 +82,3 @@ export default function Home(): React.ReactElement {
   )
 }
 
-// Helper function to find a node by ID
-function findNode(tree: TreeNodeData, id: string): TreeNodeData | null {
-  if (tree.id === id) {
-    return tree
-  }
-  if (tree.children) {
-    for (const child of tree.children) {
-      const found = findNode(child, id)
-      if (found) return found
-    }
-  }
-  return null
-}
-
